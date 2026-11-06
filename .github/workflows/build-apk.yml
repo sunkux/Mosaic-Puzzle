@@ -31,9 +31,14 @@ jobs:
       - name: Version bump
         run: |
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
       - run: npx cap sync android
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - name: Print signing info (diagnostic)
+        run: |
+          keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk | grep -E "SHA1|Owner"
+          echo "expected key:"; keytool -list -v -keystore debug.keystore -storepass android | grep SHA1
       - uses: actions/upload-artifact@v4
         with:
           name: mosaic-puzzle-apk
