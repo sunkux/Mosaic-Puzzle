@@ -55,7 +55,12 @@ jobs:
           AS=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
           $AS verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk | grep -i "SHA-1" || true
           echo "expected key:"; keytool -list -v -keystore debug.keystore -storepass android | grep SHA1 || true
+      - name: Rename APK
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/mosaic_puzzle_1.${{ github.run_number }}.apk"
+          ls out
       - uses: actions/upload-artifact@v4
         with:
           name: mosaic-puzzle-apk
-          path: mosaic-apk/android/app/build/outputs/apk/debug/app-debug.apk
+          path: mosaic-apk/out/mosaic_puzzle_1.${{ github.run_number }}.apk
