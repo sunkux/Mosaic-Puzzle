@@ -33,6 +33,8 @@
   #mHelp ul{margin:0;padding-left:18px}
   #mHelp p{margin:0}
   #mHelp .ex{color:var(--mut)}
+  #toast{position:fixed;left:50%;bottom:calc(40px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(40,40,50,.95);color:#fff;border:1px solid #55556a;border-radius:20px;padding:10px 18px;font-size:13px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
+  #toast.show{opacity:1}
   #mHelp .goal{background:#2a2410;border:1px solid #ffd76a;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:14px;margin-bottom:10px}
   #mHelp .goal b:first-of-type{color:#ffd76a}
   #mHelp .goal span{font-size:15px}
@@ -200,6 +202,7 @@
   <div class="note">🧩 타일 구성: 2×2 타일 15개. 한 타일은 <b>4색 모두 다르거나</b>, <b>같은 색이 딱 2칸</b>.</div>
   <div class="mb"><span></span><button id="bHelpClose">닫기</button></div>
 </div></div>
+<div id="toast">뒤로가기를 한 번 더 누르면 종료됩니다</div>
 <div id="mRes" class="modal"><div class="card res">
   <div class="grid"><div id="resColors"></div><div id="resInfo"></div></div>
   <div class="badges" id="resBadges"></div>
@@ -450,6 +453,23 @@ $('msg').textContent='"무작위 타일 배치"를 눌러 시작';
 $('seedIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('bSeed').click()});
 document.addEventListener('contextmenu',e=>e.preventDefault());
 updateIcons();renderRec();render();
+/* 안드로이드 뒤로가기: 팝업 닫기 → 한 번 더 누르면 종료 */
+(function(){
+  if(!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()))return;
+  let armed=false,tm=null;
+  const toast=$('toast');
+  function push(){try{history.pushState({g:1},'')}catch(e){}}
+  try{history.replaceState({g:0},'')}catch(e){}
+  push();
+  window.addEventListener('popstate',()=>{
+    const open=['mHelp','modal'].map($).find(m=>m&&m.classList.contains('show'));
+    if(open){open.classList.remove('show');push();return}
+    if($('mRes').classList.contains('show')){push();return}
+    if(armed){clearTimeout(tm);history.back();return}
+    armed=true;toast.classList.add('show');push();
+    tm=setTimeout(()=>{armed=false;toast.classList.remove('show')},2000);
+  });
+})();
 </script>
 </body>
 </html>
