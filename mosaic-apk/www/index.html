@@ -33,6 +33,31 @@
   #mHelp ul{margin:0;padding-left:18px}
   #mHelp p{margin:0}
   #mHelp .ex{color:var(--mut)}
+  #mHelp .goal{background:#2a2410;border:1px solid #ffd76a;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:14px;margin-bottom:10px}
+  #mHelp .goal b:first-of-type{color:#ffd76a}
+  #mHelp .goal span{font-size:15px}
+  #mHelp .sec{display:flex;gap:10px;background:#22222c;border-radius:10px;padding:10px;margin-bottom:8px}
+  #mHelp .num{flex:none;width:24px;height:24px;border-radius:50%;background:#ffd76a;color:#222;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  #mHelp .bd{flex:1;min-width:0}
+  #mHelp .bd h3{margin:2px 0 6px;font-size:15px}
+  #mHelp .bd p{margin:0 0 6px}
+  #mHelp em{font-style:normal;color:#ffd76a}
+  #mHelp .warn{color:#ff8a8a}
+  #mHelp .demo{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0;flex-wrap:wrap}
+  #mHelp .demo .row{display:flex;gap:2px}
+  #mHelp .t{width:26px;height:26px;border-radius:5px;background:#4a6fa5;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  #mHelp .t.e{background:#9bd0f0}
+  #mHelp .ar{font-size:12px;color:#ffd76a;font-weight:700}
+  #mHelp .ex2{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+  #mHelp .c{padding:3px 10px;border-radius:8px;font-weight:800;font-size:14px;color:#fff}
+  #mHelp .c.R{background:var(--R)}#mHelp .c.B{background:var(--B)}#mHelp .c.Y{background:var(--Y);color:#222}#mHelp .c.G{background:var(--G)}
+  #mHelp .c.dim{opacity:.4}
+  #mHelp .sum{flex-basis:100%;font-size:13px}
+  #mHelp .sum b{color:#ffd76a;font-size:15px}
+  #mHelp dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:baseline}
+  #mHelp dt{font-weight:800;white-space:nowrap}
+  #mHelp dd{margin:0;color:#cfcfda}
+  #mHelp .note{font-size:12px;color:var(--mut);padding:2px 4px}
   .res .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
   #resInfo{display:grid;grid-template-columns:auto auto auto;column-gap:6px;row-gap:4px;justify-self:end;align-items:baseline}
   #resInfo b{text-align:center;font-weight:800;min-width:1em}
@@ -135,31 +160,42 @@
 </div></div>
 <div id="mHelp" class="modal"><div class="card">
   <h2><img class="ti" data-ic="helpOld" alt=""> 게임 방법</h2>
-  <h3>목표</h3>
-  <p>타일을 움직여 <b>상위 2색의 값 합이 20점 이상</b>이 되게 만든 뒤 제출.</p>
-  <h3>조작</h3>
-  <ul>
-    <li>빈칸과 <b>같은 줄(가로/세로)</b>에 있는 타일을 탭 → 빈칸까지 사이의 타일이 한 칸씩 밀림 (1회 이동)</li>
-    <li>대각선 타일은 움직일 수 없음</li>
-    <li>잘못 밀었으면 <b>되돌리기</b> (되돌리기도 이동 1회로 계산)</li>
-  </ul>
-  <h3>점수 계산</h3>
-  <ul>
-    <li>판은 2×2 색 타일 15개 = 색 칸 60개</li>
-    <li>색별 값 = 상하좌우로 이어진 같은 색 칸 중 <b>가장 큰 덩어리의 크기</b></li>
-    <li class="ex">예) R 14 · B 11 · G 4 · Y 6 → 상위 2색 14+11 = 25점</li>
-    <li>상단 숫자와 진행바로 실시간 확인. 20점이 되면 <b>제출</b> 활성화 → 제출 후 새 랜덤 배열로 시작</li>
-  </ul>
-  <h3>버튼</h3>
-  <ul>
-    <li><b>연결 표시</b>: 점수에 반영되는 덩어리 윤곽선 표시</li>
-    <li><b>제한시간 10분</b>: 켜면 판마다 10분 카운트다운, 0이 되면 종료</li>
-    <li><b>시드</b>: 같은 시드 = 같은 배열 (같은 판으로 대결할 때 사용)</li>
-    <li><b>무작위 타일 배치</b>: 새 배열로 시작</li>
-    <li><b><img class="ti s" data-ic="recOld" alt=""> 기록</b>: 최단 이동 / 최단 시간 / 최고점</li>
-  </ul>
-  <h3>타일 규칙</h3>
-  <p>각 타일은 4색이 모두 다르거나, 같은 색이 정확히 2칸인 타일만 나옴.</p>
+  <div class="goal">🎯 <b>목표</b><span>가장 큰 덩어리 <b>상위 2색의 합 ≥ 20점</b> → <b>제출</b></span></div>
+
+  <div class="sec"><div class="num">1</div><div class="bd">
+    <h3>타일 밀기</h3>
+    <p>빈칸과 <b>같은 가로/세로 줄</b>의 타일을 탭 → 사이 타일이 전부 한 칸씩 이동 <em>(1회)</em></p>
+    <div class="demo">
+      <div class="row"><span class="t">A</span><span class="t">B</span><span class="t">C</span><span class="t e"></span></div>
+      <span class="ar">A 탭 ▶</span>
+      <div class="row"><span class="t e"></span><span class="t">A</span><span class="t">B</span><span class="t">C</span></div>
+    </div>
+    <p class="warn">✕ 대각선 타일은 이동 불가</p>
+    <p>잘못 밀었으면 <b>되돌리기</b> (이것도 1회로 계산)</p>
+  </div></div>
+
+  <div class="sec"><div class="num">2</div><div class="bd">
+    <h3>점수 계산</h3>
+    <p>색마다 <b>상하좌우로 붙은 같은 색 칸</b> 중 <b>가장 큰 덩어리의 칸 수</b>가 그 색의 점수. 이 중 <b>높은 2색을 더함</b>.</p>
+    <div class="ex2">
+      <span class="c R">R 14</span><span class="c B">B 11</span><span class="c Y dim">Y 6</span><span class="c G dim">G 4</span>
+      <div class="sum">상위 2색 14 + 11 = <b>25점</b> ✔</div>
+    </div>
+    <p>위쪽 색 칩에서 실시간 확인. 20점 넘으면 <b>제출</b> 활성화.</p>
+  </div></div>
+
+  <div class="sec"><div class="num">3</div><div class="bd">
+    <h3>버튼</h3>
+    <dl>
+      <dt>연결 표시</dt><dd>점수에 들어가는 덩어리를 흰 윤곽선으로 표시</dd>
+      <dt>제한시간 10분</dt><dd>켜면 10분 카운트다운, 0이 되면 종료</dd>
+      <dt>시드로 시작</dt><dd>같은 시드 = 같은 배치 (같은 판으로 대결)</dd>
+      <dt>무작위 타일 배치</dt><dd>새 배치로 시작</dd>
+      <dt><img class="ti s" data-ic="recOld" alt=""> 기록</dt><dd>최단 이동 · 최단 시간 · 최고점</dd>
+    </dl>
+  </div></div>
+
+  <div class="note">🧩 타일 구성: 2×2 타일 15개. 한 타일은 <b>4색 모두 다르거나</b>, <b>같은 색이 딱 2칸</b>.</div>
   <div class="mb"><span></span><button id="bHelpClose">닫기</button></div>
 </div></div>
 <div id="mRes" class="modal"><div class="card res">
