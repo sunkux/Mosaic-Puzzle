@@ -56,7 +56,6 @@
     background:#000;border-radius:4px;overflow:hidden;cursor:pointer;outline:3px solid transparent;outline-offset:-3px}
   .piece i{display:block}
   .piece i.B{background:var(--B)}.piece i.Y{background:var(--Y)}.piece i.R{background:var(--R)}.piece i.G{background:var(--G)}
-  .piece i.hl{box-shadow:inset 0 0 0 3px rgba(255,255,255,.9)}
   .slot.empty{background:#bcd6e6}
   .ctl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
   button{background:var(--panel);color:var(--tx);border:1px solid #33333f;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
@@ -136,7 +135,7 @@ function randomBoard(rng){
     if(i===e)return null;
     let s;
     do{ s='';for(let k=0;k<4;k++)s+=C[Math.floor(rng()*4)]; }
-    while([...C].some(c=>s.split(c).length-1>2)); // 타일당 같은 색 최대 2칸
+    while(new Set(s).size<3); // 4색 전부 다름 또는 쌍 1개만 허용 (3개 이상·쌍 2개 제외)
     return s;
   });
 }
@@ -244,8 +243,8 @@ function render(){
   $('bSub').disabled=!ok;
   $('bUndo').disabled=!started||over||hist.length===0;
   $('mv').textContent=moves;
-  const hs=new Set();
-  if(hl&&started)for(const c of top)for(const [y,x] of a[c].cells)hs.add(y*8+x);
+  const hs=new Map(); // 칸 → 색 (상위 2색의 최대 덩어리)
+  if(hl&&started)for(const c of top)for(const [y,x] of a[c].cells)hs.set(y*8+x,c);
   const el=$('board');el.innerHTML='';el.className=over?'over':'';
   const e=emptyIdx();
   board.forEach((p,i)=>{
@@ -255,7 +254,16 @@ function render(){
       const sr=(i>>2)*2,sc=(i&3)*2;
       for(let k=0;k<4;k++){
         const q=document.createElement('i');
-        q.className=p[k]+(hs.has((sr+(k>>1))*8+sc+(k&1))?' hl':'');
+        q.className=p[k];
+        const cy=sr+(k>>1),cx=sc+(k&1),col=hs.get(cy*8+cx);
+        if(col){ // 덩어리 바깥쪽 변에만 흰색 2px 윤곽선
+          const out=(y,x)=>y<0||y>7||x<0||x>7||hs.get(y*8+x)!==col, sh=[];
+          if(out(cy-1,cx))sh.push('inset 0 2px 0 #fff');
+          if(out(cy+1,cx))sh.push('inset 0 -2px 0 #fff');
+          if(out(cy,cx-1))sh.push('inset 2px 0 0 #fff');
+          if(out(cy,cx+1))sh.push('inset -2px 0 0 #fff');
+          q.style.boxShadow=sh.join(',');
+        }
         d.appendChild(q);
       }
       d.onclick=()=>tap(i);s.appendChild(d);
