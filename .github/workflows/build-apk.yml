@@ -20,8 +20,17 @@ jobs:
           java-version: 21
       - run: npm install
       - run: npx cap add android
+      - name: Generate icons
+        run: npx capacitor-assets generate --android
       - name: Portrait lock
         run: sed -i 's|<activity|<activity android:screenOrientation="portrait"|' android/app/src/main/AndroidManifest.xml
+      - name: Fixed signing key (update-compatible)
+        run: |
+          mkdir -p ~/.android
+          cp debug.keystore ~/.android/debug.keystore
+      - name: Version bump
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
       - run: npx cap sync android
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
