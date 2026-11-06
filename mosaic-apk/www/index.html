@@ -101,7 +101,9 @@
   .piece i{display:block}
   .piece i.B{background:var(--B)}.piece i.Y{background:var(--Y)}.piece i.R{background:var(--R)}.piece i.G{background:var(--G)}
   .slot.empty{background:#bcd6e6}
-  .ctl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+  .ctl{display:flex;flex-wrap:nowrap;gap:6px;justify-content:center;margin-top:6px}
+  .ctl button{white-space:nowrap;padding:8px 8px;font-size:13px}
+  #bHl{min-width:78px}#bSnd{min-width:74px}#bLim{min-width:132px}
   button{background:var(--panel);color:var(--tx);border:1px solid #33333f;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
   button.on{background:#2d3a5a;border-color:#5b7bd5}
   button#bSub{background:#1f6b3a;border-color:#6fe07a;font-weight:700;font-size:16px;padding:8px 22px}
