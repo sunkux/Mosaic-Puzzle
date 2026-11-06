@@ -36,9 +36,11 @@ jobs:
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - name: Print signing info (diagnostic)
+        continue-on-error: true
         run: |
-          keytool -printcert -jarfile android/app/build/outputs/apk/debug/app-debug.apk | grep -E "SHA1|Owner"
-          echo "expected key:"; keytool -list -v -keystore debug.keystore -storepass android | grep SHA1
+          AS=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          $AS verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk | grep -i "SHA-1" || true
+          echo "expected key:"; keytool -list -v -keystore debug.keystore -storepass android | grep SHA1 || true
       - uses: actions/upload-artifact@v4
         with:
           name: mosaic-puzzle-apk
