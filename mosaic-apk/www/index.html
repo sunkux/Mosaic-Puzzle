@@ -79,7 +79,9 @@
   .res .grid .dot{width:14px;height:14px;margin:0;vertical-align:-1px}
   #resColors{display:grid;grid-template-columns:auto auto auto;column-gap:6px;row-gap:4px;justify-self:start;align-items:center}
   #resColors b{text-align:center;font-weight:800;min-width:1em}
-  .res .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+  .res .badges{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px}
+  .res .badges:empty{margin-top:0}
+  .res .br{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
   .res .badge{background:#3a3217;border:1px solid #b88f1a;color:#ffd76a;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:700}
   .res button{width:100%;margin-top:16px;background:#1f6b3a;border-color:#6fe07a;font-weight:700;font-size:16px;padding:12px}
   .bar{display:flex;gap:14px;font-size:13px;color:var(--mut);margin-bottom:4px}
@@ -234,7 +236,7 @@
 const COLORS='RBGY', TARGET=20, LIMIT=600000;
 let board=Array(16).fill(null), started=false, over=false, moves=0, t0=null, timer=null,
     submits=0, hl=false, limitMode=false, sound=true, hist=[], seed='', roundBest=0, resetArm=false;
-let paused=false, frozenEl=null;
+let paused=false, frozenEl=null, roundScoreRec=false;
 let rec={moves:null,time:null,score:0};
 try{const r=JSON.parse(localStorage.getItem('mosaicRec')||'null'); if(r)rec=Object.assign(rec,r)}catch(e){}
 function saveRec(){try{localStorage.setItem('mosaicRec',JSON.stringify(rec))}catch(e){}}
@@ -380,7 +382,7 @@ function render(){
   const top=rank.slice(0,2), sum=a[top[0]].size+a[top[1]].size;
   if(started&&!over){
     if(sum>roundBest)roundBest=sum;
-    if(moves>0&&sum>rec.score){rec.score=sum;saveRec();renderRec();markNewRec()}
+    if(moves>0&&sum>rec.score){rec.score=sum;roundScoreRec=true;saveRec();renderRec();markNewRec()}
   }
   $('cnt').innerHTML=COLORS.split('').map(c=>
     `<span><i class="dot ${c}"></i>${c} <b>${started?a[c].total:'-'}</b></span>`).join('');
@@ -444,7 +446,7 @@ function undo(){
 }
 function newRound(s,msg,cls){
   seed=s;{const rng=mulberry(hashStr(s));if(!specialBoard(s,rng))randomBoard(rng)}
-  started=true;over=false;hist=[];moves=0;roundBest=0;paused=false;frozenEl=null;$('mPause').classList.remove('show');
+  started=true;over=false;hist=[];moves=0;roundBest=0;roundScoreRec=false;paused=false;frozenEl=null;$('mPause').classList.remove('show');
   clearInterval(timer);t0=null;
   $('seedIn').value=s;
   if(limitMode){startClock()} else setTime(0,false);
@@ -486,7 +488,8 @@ $('bSub').onclick=()=>{
   over=true;clearInterval(timer);clearGame();   // 결과 팝업 동안 판·타이머 정지
   $('resColors').innerHTML=[r[0],r[1]].map(c=>`<i class="dot ${c}"></i><span>${c}</span><b>${a[c].size}</b>`).join('');
   $('resInfo').innerHTML=`<small>총점</small><b>${s}</b><small>점</small><small>이동</small><b>${moves}</b><small>회</small><small>시간</small><b>${(el/1000).toFixed(1)}</b><small class="u1">s</small>`;
-  $('resBadges').innerHTML=badges.map(t=>`<span class="badge">🏅 ${t}</span>`).join('');
+  const bd=t=>`<span class="badge">🏅 ${t}</span>`;
+  $('resBadges').innerHTML=(badges.length?`<div class="br">${badges.map(bd).join('')}</div>`:'')+(roundScoreRec&&moves>0?`<div class="br">${bd('최고 점수 신기록')}</div>`:'');
   render();
   $('mRes').classList.add('show');
 };
@@ -530,7 +533,7 @@ function clearGame(){try{localStorage.removeItem('mosaicGame')}catch(e){}}
 function saveGame(){
   if(!started||over)return;
   const el=paused?frozenEl:(t0!==null?elapsed():null);
-  try{localStorage.setItem('mosaicGame',JSON.stringify({board,moves,hist,seed,roundBest,el}))}catch(e){}
+  try{localStorage.setItem('mosaicGame',JSON.stringify({board,moves,hist,seed,roundBest,el,rsr:roundScoreRec}))}catch(e){}
 }
 function restore(){
   try{
@@ -546,7 +549,7 @@ function restore(){
   try{
     const g=JSON.parse(localStorage.getItem('mosaicGame')||'null');
     if(!g||!Array.isArray(g.board)||g.board.length!==16)return;
-    board=g.board;moves=g.moves|0;hist=Array.isArray(g.hist)?g.hist:[];seed=g.seed||'';roundBest=g.roundBest|0;
+    board=g.board;moves=g.moves|0;hist=Array.isArray(g.hist)?g.hist:[];seed=g.seed||'';roundBest=g.roundBest|0;roundScoreRec=!!g.rsr;
     started=true;over=false;t0=null;
     $('seedIn').value=seed;
     const el=(typeof g.el==='number')?g.el:null;
