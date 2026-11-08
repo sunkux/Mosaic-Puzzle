@@ -83,7 +83,10 @@
   .res .badges:empty{margin-top:0}
   .res .br{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
   .res .badge{background:#3a3217;border:1px solid #b88f1a;color:#ffd76a;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:700}
-  .res button{width:100%;margin-top:16px;background:#1f6b3a;border-color:#6fe07a;font-weight:700;font-size:16px;padding:12px}
+  .res .rb{display:flex;gap:8px;margin-top:16px}
+  .res .rb button{font-weight:700;font-size:16px;padding:12px;white-space:nowrap}
+  .res #bBack{flex:1}
+  .res #bNext{flex:1.6;background:#1f6b3a;border-color:#6fe07a}
   .bar{display:flex;gap:14px;font-size:13px;color:var(--mut);margin-bottom:4px}
   .bar b{color:var(--tx);font-variant-numeric:tabular-nums}
   .bar b.warn{color:#ff6b6b}
@@ -230,13 +233,13 @@
 <div id="mRes" class="modal"><div class="card res">
   <div class="grid"><div id="resColors"></div><div id="resInfo"></div></div>
   <div class="badges" id="resBadges"></div>
-  <button id="bNext">다음 게임</button>
+  <div class="rb"><button id="bBack">돌아가기</button><button id="bNext">다음 게임</button></div>
 </div></div>
 <script>
 const COLORS='RBGY', TARGET=20, LIMIT=600000;
 let board=Array(16).fill(null), started=false, over=false, moves=0, t0=null, timer=null,
     submits=0, hl=false, limitMode=false, sound=true, hist=[], seed='', roundBest=0, resetArm=false;
-let paused=false, frozenEl=null, roundScoreRec=false;
+let paused=false, frozenEl=null, roundScoreRec=false, subEl=null;
 let rec={moves:null,time:null,score:0};
 try{const r=JSON.parse(localStorage.getItem('mosaicRec')||'null'); if(r)rec=Object.assign(rec,r)}catch(e){}
 function saveRec(){try{localStorage.setItem('mosaicRec',JSON.stringify(rec))}catch(e){}}
@@ -477,7 +480,7 @@ $('bSub').onclick=()=>{
   if(!started||over||paused)return;
   const a=analyze(),r=[...COLORS].sort((x,y)=>a[y].size-a[x].size),s=a[r[0]].size+a[r[1]].size;
   if(s<TARGET)return;
-  const el=elapsed(),badges=[];
+  const el=elapsed(),badges=[];subEl=t0===null?null:el;
   if(moves>0){
     if(rec.moves===null||moves<rec.moves){rec.moves=moves;badges.push('최단 이동 신기록')}
     if(rec.time===null||el<rec.time){rec.time=el;badges.push('최단 시간 신기록')}
@@ -490,8 +493,15 @@ $('bSub').onclick=()=>{
   $('resInfo').innerHTML=`<small>총점</small><b>${s}</b><small>점</small><small>이동</small><b>${moves}</b><small>회</small><small>시간</small><b>${(el/1000).toFixed(1)}</b><small class="u1">s</small>`;
   const bd=t=>`<span class="badge">🏅 ${t}</span>`;
   $('resBadges').innerHTML=(badges.length?`<div class="br">${badges.map(bd).join('')}</div>`:'')+(roundScoreRec&&moves>0?`<div class="br">${bd('최고 점수 신기록')}</div>`:'');
+  roundScoreRec=false;   // 돌아가기 후 재제출 시엔 새로 갱신한 경우만 표시
   render();
   $('mRes').classList.add('show');
+};
+$('bBack').onclick=()=>{
+  $('mRes').classList.remove('show');
+  over=false;
+  if(subEl!==null){t0=Date.now()-subEl;clearInterval(timer);timer=setInterval(tick,100);tick()}
+  render();saveGame();
 };
 $('bNext').onclick=()=>{$('mRes').classList.remove('show');newRound(genSeed(),'')};
 $('bHelp').onclick=()=>{if(!helpSeen){helpSeen=true;saveFlags();updateIcons()}$('mHelp').scrollTop=0;$('mHelp').firstElementChild.scrollTop=0;$('mHelp').classList.add('show')};
@@ -577,7 +587,7 @@ restore();
     if($('mPause').classList.contains('show')||$('mEgg').classList.contains('show')){push();return}
     const open=['mHelp','modal'].map($).find(m=>m&&m.classList.contains('show'));
     if(open){open.classList.remove('show');push();return}
-    if($('mRes').classList.contains('show')){push();return}
+    if($('mRes').classList.contains('show')){$('bBack').click();push();return}
     if(armed){clearTimeout(tm);history.back();return}
     armed=true;toast.classList.add('show');push();
     tm=setTimeout(()=>{armed=false;toast.classList.remove('show')},2000);
